@@ -1,0 +1,31 @@
+/* Default theme. site-press overwrites this with tokens captured from the
+   original site; edit freely afterwards. */
+:root {
+  --sp-font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sp-font-heading: Georgia, 'Times New Roman', serif;
+  --sp-body-size: 17px;
+  --sp-body-line-height: 1.6;
+  --sp-heading-weight: 600;
+  --sp-heading-line-height: 1.2;
+  --sp-heading-letter-spacing: normal;
+  --sp-h1-size: clamp(2.2rem, 5vw, 3.6rem);
+  --sp-h2-size: clamp(1.7rem, 3.5vw, 2.4rem);
+  --sp-h3-size: 1.35rem;
+  --sp-color-text: #1f1f1f;
+  --sp-color-bg: #ffffff;
+  --sp-color-link: #1f4fd1;
+  --sp-content-width: 1180px;
+  --sp-gutter: 24px;
+  --sp-gap: 32px;
+  --sp-section-pad: 80px;
+  --sp-radius: 4px;
+  --sp-btn-bg: #1f1f1f;
+  --sp-btn-color: #ffffff;
+  --sp-btn-radius: 4px;
+  --sp-btn-pad: 0.8em 1.6em;
+  --sp-header-bg: #ffffff;
+  --sp-header-color: #1f1f1f;
+  --sp-header-height: 84px;
+  --sp-footer-bg: #f3f3f3;
+  --sp-footer-color: #1f1f1f;
+}

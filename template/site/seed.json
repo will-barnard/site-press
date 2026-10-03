@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "site": { "siteTitle": "New site", "nav": [{ "label": "Home", "href": "/" }], "footer": { "text": "", "links": [] }, "social": [] },
+  "media": [],
+  "pages": [
+    {
+      "path": "/",
+      "title": "Home",
+      "status": "published",
+      "seo": {},
+      "blocks": [
+        { "type": "hero", "variant": "centered", "props": { "heading": "Welcome", "subheading": "Edit this page in /admin." } }
+      ]
+    }
+  ],
+  "redirects": []
+}

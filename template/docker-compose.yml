@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: site
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # One Node service serves everything: server-rendered pages, the admin, the
+  # API and /media. No nginx in front of it inside the app — Beachhead's
+  # nginx-proxy already terminates TLS.
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: site
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      ADMIN_BOOTSTRAP_TOKEN: ${ADMIN_BOOTSTRAP_TOKEN}
+      PUBLIC_URL: ${PUBLIC_URL}
+      MEDIA_DIR: /data/media
+      BREW_BUCKET_URL: ${BREW_BUCKET_URL:-}
+      BREW_BUCKET_KEY: ${BREW_BUCKET_KEY:-}
+      BREW_BUCKET_PREFIX: __SITE_SLUG__
+    volumes:
+      - media_data:/data/media
+    expose:
+      - "3000"
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    name: __SITE_SLUG__-postgres
+  media_data:
+    name: __SITE_SLUG__-media
+
+networks:
+  internal:

@@ -1,0 +1,27 @@
+{
+  "name": "__SITE_SLUG__-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && vite build --ssr core/client/entry-server.js --outDir dist/server",
+    "start": "node core/server/index.js",
+    "dev": "vite",
+    "dev:server": "node --watch core/server/index.js",
+    "preview:seed": "npm run build && SITE_PREVIEW_SEED=1 node core/server/index.js",
+    "seed": "node core/server/bin/seed.js"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "pinia": "^3.0.1",
+    "sanitize-html": "^2.14.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.3.5"
+  },
+  "engines": { "node": ">=20" }
+}

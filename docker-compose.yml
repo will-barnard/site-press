@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sitepress
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sitepress
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      JOBS_DIR: /data/jobs
+      BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN:-}
+      ALLOW_PRIVATE_URLS: ${ALLOW_PRIVATE_URLS:-0}
+      DRYDOCK_BASE_URL: ${DRYDOCK_BASE_URL:-}
+      DRYDOCK_API_KEY: ${DRYDOCK_API_KEY:-}
+      DRYDOCK_POOL: ${DRYDOCK_POOL:-coder}
+      BREW_BUCKET_URL: ${BREW_BUCKET_URL:-}
+      BREW_BUCKET_KEY: ${BREW_BUCKET_KEY:-}
+      BREW_BUCKET_ARTIFACTS: ${BREW_BUCKET_ARTIFACTS:-artifacts}
+    volumes:
+      - jobs_data:/data/jobs
+    expose:
+      - "3001"
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # The pipeline: headless Chromium (Playwright), the vendored template and
+  # its build deps, and the dry-dock + brew-bucket clients. One job at a time.
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sitepress
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      JOBS_DIR: /data/jobs
+      DRYDOCK_BASE_URL: ${DRYDOCK_BASE_URL:-}
+      DRYDOCK_API_KEY: ${DRYDOCK_API_KEY:-}
+      DRYDOCK_POOL: ${DRYDOCK_POOL:-coder}
+      DRYDOCK_FALLBACK_UNPINNED: ${DRYDOCK_FALLBACK_UNPINNED:-1}
+      BREW_BUCKET_URL: ${BREW_BUCKET_URL:-}
+      BREW_BUCKET_KEY: ${BREW_BUCKET_KEY:-}
+      BREW_BUCKET_ARTIFACTS: ${BREW_BUCKET_ARTIFACTS:-artifacts}
+      PASS_VISUAL: ${PASS_VISUAL:-0.72}
+      PASS_TEXT: ${PASS_TEXT:-0.97}
+    volumes:
+      - jobs_data:/data/jobs
+    # No expose: the worker serves nothing; it polls the jobs table.
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks: [internal]
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+    name: site-press-postgres
+  jobs_data:
+    name: site-press-jobs
+
+networks:
+  internal:
